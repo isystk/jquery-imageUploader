@@ -1,0 +1,132 @@
+<!DOCTYPE HTML>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="robots" content="noindex, nofollow">
+  <title>一括画像アップローダー | DEMOページ</title>
+<link href="index.css" rel="stylesheet"></head>
+<body class="column2 side-left">
+  <div class="wrap">
+    <header>
+      <div class="header-image">
+        <div class="logo">一括画像アップローダー</div>
+      </div>
+    </header>
+    <div class="content">
+      <main>
+        <article class="detail" >
+          <div class="entry-header">
+            <h1 class="entry-title"><a href="#">一括画像アップローダーのサンプル</a></h1>
+          </div>
+          <div class="entry-content">
+            <h2>デモ</h2>
+
+            <h4>一括画像アップロード</h4>
+            <div class="box">
+              <div class="upload-wrap">
+                <input type="file" name="image_file[]" multiple="multiple" class="js-uploadImage">
+                <div class="js-zoomSlider">
+                  <div class="gallery">
+                    <ul>
+                    </ul>
+                  </div>
+                  <div class="clearfix"></div>
+                </div>
+              </div>
+            </div>
+    
+
+            <h2 id="usage">使い方</h2>
+            <h4>Javascript</h4>
+            <pre class="code">
+&lt;script src="https://demo.isystk.com/jquery-zoomSlider/js/jquery-imageUploader.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript"&gt;
+$(function() {
+
+  // 画像ファイル選択時
+  $('.js-uploadImage').change(function(){
+
+    if (this.files.length === 0) {
+      return;
+    }
+    
+    // Loading画像
+    $('&lt;div id="site_loader_overlay"&gt;&lt;div class="site_loader_spinner" &gt;&lt;/div&gt;&lt;/div&gt;').appendTo('body');
+
+    var fileLength = this.files.length;
+    var count = 0;
+    imageUpload(this, function(image) {
+
+      if (!image) {
+        // Loading画像
+        $('#site_loader_overlay').remove();
+        return false;
+      }
+      
+      var li = $('&lt;li&gt;&lt;p&gt;&lt;/p&gt;&lt;/li&gt;');
+      image.width('103px');
+      li.find('p').append(image);
+      $('.gallery ul').append(li);
+
+      count = count + 1;
+      if (fileLength == count) {
+        // Loading画像
+        $('#site_loader_overlay').remove();
+      }
+    });
+  });
+
+  // 画像アップロード
+  var imageUpload = function(obj, callbackfunc){
+    var self = $(obj);
+    
+    // 未選択の場合は何もしない。
+    if (self.val() === '') {
+      return;
+    }
+
+    // アップロード中は、「ファイル選択」ボタンを非活性にする。
+    self.attr('disabled', 'disabled');
+
+    $.imageUploader({
+    uploadUrl: '/jquery-imageUploader/imageUpload/',
+    successCallback : function(res) {
+
+      var img = $('<img>').attr('src', res.imagePath);
+      if (callbackfunc) {
+        callbackfunc(res);
+      }
+      
+    },
+    errorsCallback : function(errors) {
+      self.removeAttr('disabled');
+
+      if (callbackfunc) {
+        callbackfunc();
+      }
+  
+      return false;
+    }
+    
+     }).fileUpload(obj);
+
+  };
+  
+});
+&lt;/script&gt;
+</pre>
+            <h2 id="source">ソースコード</h2>
+            <a href="https://github.com/isystk/jquery-imageUploader">https://github.com/isystk/jquery-imageUploader</a>
+            
+          </div>
+        </article>
+      </main>
+      <aside class="side-left">
+        <div id="sticky-navigator">
+        </div>
+      </aside>
+    </div>
+  </div>
+<script type="text/javascript" src="js/index.js"></script></body>
+</html>
