@@ -67,92 +67,22 @@ $(function() {
 	// ページ内見出しナビゲーション
 	$('#sticky-navigator').stickyNavigator({wrapselector: '.entry-content'});
 
-
 	// 画像ファイルアップロード
-	(function() {
+	$('.js-uploadImage').imageUploader({
+		dropAreaSelector: '#drop-zone',
+		successCallback: function(res) {
 
-  // 画像ファイル選択時
-		$('.js-uploadImage').change(function(){
-
-			if (this.files.length === 0) {
-				return;
-			}
-			
-			// Loading画像
-			$('<div id="site_loader_overlay"><div class="site_loader_spinner" ></div></div>').appendTo('body');
-
-			var fileLength = this.files.length;
-			var count = 0;
-			imageUpload(this, function(image) {
-
-				if (!image) {
-					// Loading画像
-					$('#site_loader_overlay').remove();
-					return false;
-				}
-				
-				var li = $('<li><p></p></li>');
-				image.width('103px');
-				li.find('p').append(image);
-				$('.gallery ul').append(li);
-
-				count = count + 1;
-				if (fileLength == count) {
-					// Loading画像
-					$('#site_loader_overlay').remove();
-				}
-			});
-		});
-
-		// 画像アップロード
-		var imageUpload = function(obj, callbackfunc){
-			var self = $(obj);
-			
-			// 未選択の場合は何もしない。
-			if (self.val() === '') {
-				return;
-			}
-
-			// アップロード中は、「ファイル選択」ボタンを非活性にする。
-			self.attr('disabled', 'disabled');
-
-			_.each(obj.files, function(file) {
-				var fr = new FileReader();
-				fr.onload = function() {
-					var img = $('<img>').attr('src', fr.result);
-					if (callbackfunc) {
-						callbackfunc(img);
-					}
-				};
-				fr.readAsDataURL(file);
-			});
-
-		// 	$.imageUploader({
-		// 		uploadUrl: '/jquery-imageUploader/imageUpload/',
-		// 		successCallback : function(res) {
-
-		// 			var img = $('<img>').attr('src', res.imagePath);
-		// 			if (callbackfunc) {
-		// 				callbackfunc(res);
-		// 			}
-					
-		// 		},
-		// 		errorsCallback : function(errors) {
-		// 			self.removeAttr('disabled');
-
-		// 			if (callbackfunc) {
-		// 				callbackfunc();
-		// 			}
-		// s
-		// 			return false;
-		// 		}
-				
-		//     }).fileUpload(obj);
-
-		};
+			$([
+				'<tr>',
+					'<td><img src="'+res.fileData+'" /></td>',
+					'<td>'+res.fileName+'</td>',
+					'<td>'+res.fileSize+'</td>',
+					'<td>'+res.fileType+'</td>',
+				'</tr>'
+			].join('')).appendTo('#select-image table');
+		}
+	});
 		
-	})();
-	
 });
 
 
