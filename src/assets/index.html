@@ -44,9 +44,11 @@
               <div id="select-image">
                 <table>
                   <tr>
-                    <th>画像</th>
                     <th>ファイル名</th>
-                    <th>サイズ</th>
+                    <th>オリジナル画像</th>
+                    <th>リサイズ後画像</th>
+                    <th>元のサイズ</th>
+                    <th>リサイズ後サイズ</th>
                     <th>タイプ</th>
                   </tr>
                 </table>
@@ -61,15 +63,7 @@ $(function() {
 	$('.js-uploadImage').imageUploader({
 		dropAreaSelector: '#drop-zone',
 		successCallback: function(res) {
-
-			$([
-				'&lt;tr&gt;',
-					'&lt;td&gt;&lt;img src="'+res.fileData+'" />&lt;/td&gt;',
-					'&lt;td&gt;'+res.fileName+'&lt;/td&gt;',
-					'&lt;td&gt;'+res.fileSize+'&lt;/td&gt;',
-					'&lt;td&gt;'+res.fileType+'&lt;/td&gt;',
-				'&lt;/tr&gt;'
-			].join('')).appendTo('#select-image table');
+      console.log(res);
 		}
 	});
 });
