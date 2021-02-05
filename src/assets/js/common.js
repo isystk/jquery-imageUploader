@@ -74,8 +74,10 @@ $(function() {
 
 			$([
 				'<tr>',
-					'<td><img src="'+res.fileData+'" /></td>',
 					'<td>'+res.fileName+'</td>',
+					'<td><img src="'+res.ofileData+'" /></td>',
+					'<td><img src="'+res.fileData+'" /></td>',
+					'<td>'+res.ofileSize+'</td>',
 					'<td>'+res.fileSize+'</td>',
 					'<td>'+res.fileType+'</td>',
 				'</tr>'

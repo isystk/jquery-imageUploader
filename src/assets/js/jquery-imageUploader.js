@@ -12,6 +12,8 @@
 	
 		var params = $.extend({}, $.fn.imageUploader.defaults, options);
 
+		var THUMBNAIL_WIDTH = 500; // 画像リサイズ後の横の長さの最大値
+		var THUMBNAIL_HEIGHT = 500; // 画像リサイズ後の縦の長さの最大値
 		var nowLoading = false; // 処理中フラグ
 		var dropAreaSelector = params.dropAreaSelector;
 		var maxFileSize = params.maxFileSize;
@@ -78,28 +80,60 @@
 				}
 				
 				$.each(obj.files, function(i, file){
+					var image = new Image();
 					var fr=new FileReader();
 					fr.onload=function(evt) {
-						var res = {
-							fileData: evt.target.result
-						};
-					
-						// エラー処理
-						if (res.errors) {
-							errorCallback(res.errors);
-							return false;
+						// リサイズする
+						image.onload = function() {
+							var width, height;
+							if(image.width > image.height){
+								// 横長の画像は横のサイズを指定値にあわせる
+								var ratio = image.height/image.width;
+								width = THUMBNAIL_WIDTH;
+								height = THUMBNAIL_WIDTH * ratio;
+							} else {
+								// 縦長の画像は縦のサイズを指定値にあわせる
+								var ratio = image.width/image.height;
+								width = THUMBNAIL_HEIGHT * ratio;
+								height = THUMBNAIL_HEIGHT;
+							}
+							// サムネ描画用canvasのサイズを上で算出した値に変更
+							var canvas = $('<canvas id="canvas" width="0" height="0" ></canvas>')
+								.attr('width', width)
+								.attr('height', height);
+							var ctx = canvas[0].getContext('2d');
+							// canvasに既に描画されている画像をクリア
+							ctx.clearRect(0,0,width,height);
+							// canvasにサムネイルを描画
+							ctx.drawImage(image,0,0,image.width,image.height,0,0,width,height);
+			
+							// canvasからbase64画像データを取得
+							var base64 = canvas.get(0).toDataURL('image/jpeg');
+							// base64からBlobデータを作成
+							var barr, bin, i, len;
+							bin = atob(base64.split('base64,')[1]);
+							len = bin.length;
+							barr = new Uint8Array(len);
+							i = 0;
+							while (i < len) {
+								barr[i] = bin.charCodeAt(i);
+								i++;
+							}
+							blob = new Blob([barr], {type: 'image/jpeg'});
+
+							successCallback({
+								ofileData: evt.target.result,
+								fileData: base64,
+								fileName: file.name,
+								ofileSize: file.size,
+								fileSize: blob.size,
+								fileType: blob.type
+							});
+							
+							nowLoading = false;
 						}
+						image.src = evt.target.result;
 
-						console.log(res, file)
-
-						successCallback({
-							fileData: res.fileData,
-							fileName: file.name,
-							fileSize: file.size,
-							fileType: file.type
-						});
-
-						nowLoading = false;
 					}
 					fr.readAsDataURL(file);
 				});
