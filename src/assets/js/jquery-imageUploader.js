@@ -60,7 +60,7 @@
 			}
 				
 			if (nowLoading) {
-				// 処理中です。
+				errorCallback(['処理中です。']);
 				return;
 			}
 		
@@ -82,12 +82,12 @@
 					heic2any({
 						blob: file,
 						toType: "image/jpeg",
-						quality: 0.5
+						quality: 1
 					}).then(resultBlob => {
 						var errors = validate(resultBlob);
 						if (0 < errors.length) {
-							nowLoading = false;
 							errorCallback(errors);
+							nowLoading = false;
 							return;
 						}
 						resize(resultBlob, function(res) {
@@ -99,8 +99,8 @@
 
 					var errors = validate(file);
 					if (0 < errors.length) {
-						nowLoading = false;
 						errorCallback(errors);
+						nowLoading = false;
 						return;
 					}
 					resize(file, function(res) {
