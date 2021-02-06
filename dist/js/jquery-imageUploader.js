@@ -12,11 +12,11 @@
 	
 		var params = $.extend({}, $.fn.imageUploader.defaults, options);
 
-		var THUMBNAIL_WIDTH = 500; // 画像リサイズ後の横の長さの最大値
-		var THUMBNAIL_HEIGHT = 500; // 画像リサイズ後の縦の長さの最大値
 		var nowLoading = false; // 処理中フラグ
 		var dropAreaSelector = params.dropAreaSelector;
 		var maxFileSize = params.maxFileSize;
+		var thumbnail_width = params.thumbnail_width;
+		var thumbnail_height = params.thumbnail_height;
 		var successCallback = params.successCallback;
 		var errorCallback = params.errorCallback;
 
@@ -53,92 +53,136 @@
 
 		var exec = function(obj) {
 
+			// ファイルAPIに対応していない場合は、エラーメッセージを表示する
+			if (!window.File || !window.FileReader || !window.FileList || !window.Blob){
+				errorCallback(['お使いのブラウザはファイルAPIに対応していません。']);
+				return;
+			}
+				
 			if (nowLoading) {
 				// 処理中です。
 				return;
 			}
 		
-			nowLoading = true;
+			$.each(obj.files, function(i, file){
 
-			// ファイルAPIに対応している場合は、画像チェックとサイズチェックをクライアント側でも行う。
-			if (window.File && window.FileReader && window.FileList && window.Blob){
-				var errors = [];
-				$.each(obj.files, function(i, file){
-					// 画像ファイルチェック
-					if( !file.type.match("image.*") ){
-						errors.push('画像ファイルが不正です。');
-					}
-					// ファイルサイズチェック
-					if( maxFileSize < file.size ){
-						errors.push('画像ファイルのファイルサイズが最大値('+(maxFileSize/1000000)+'MB)を超えています。');
-					}
-				});
+				nowLoading = true;
 
-				if (0 < errors.length) {
-					nowLoading = false;
-					errorCallback(errors);
+				function getExt(filename) {
+					var pos = filename.lastIndexOf('.');
+					if (pos === -1) return '';
+					return filename.slice(pos + 1);
 				}
-				
-				$.each(obj.files, function(i, file){
-					var image = new Image();
-					var fr=new FileReader();
-					fr.onload=function(evt) {
-						// リサイズする
-						image.onload = function() {
-							var width, height;
-							if(image.width > image.height){
-								// 横長の画像は横のサイズを指定値にあわせる
-								var ratio = image.height/image.width;
-								width = THUMBNAIL_WIDTH;
-								height = THUMBNAIL_WIDTH * ratio;
-							} else {
-								// 縦長の画像は縦のサイズを指定値にあわせる
-								var ratio = image.width/image.height;
-								width = THUMBNAIL_HEIGHT * ratio;
-								height = THUMBNAIL_HEIGHT;
-							}
-							// サムネ描画用canvasのサイズを上で算出した値に変更
-							var canvas = $('<canvas id="canvas" width="0" height="0" ></canvas>')
-								.attr('width', width)
-								.attr('height', height);
-							var ctx = canvas[0].getContext('2d');
-							// canvasに既に描画されている画像をクリア
-							ctx.clearRect(0,0,width,height);
-							// canvasにサムネイルを描画
-							ctx.drawImage(image,0,0,image.width,image.height,0,0,width,height);
-			
-							// canvasからbase64画像データを取得
-							var base64 = canvas.get(0).toDataURL('image/jpeg');
-							// base64からBlobデータを作成
-							var barr, bin, i, len;
-							bin = atob(base64.split('base64,')[1]);
-							len = bin.length;
-							barr = new Uint8Array(len);
-							i = 0;
-							while (i < len) {
-								barr[i] = bin.charCodeAt(i);
-								i++;
-							}
-							blob = new Blob([barr], {type: 'image/jpeg'});
+				var ext = getExt(file.name).toLowerCase();
 
-							successCallback({
-								ofileData: evt.target.result,
-								fileData: base64,
-								fileName: file.name,
-								ofileSize: file.size,
-								fileSize: blob.size,
-								fileType: blob.type
-							});
-							
+				if (ext === 'heic') {
+					// HEIC対応 iphone11 以降で撮影された画像にも対応する
+					// console.log('HEIC形式の画像なのでJPEGに変換します。')
+
+					heic2any({
+						blob: file,
+						toType: "image/jpeg",
+						quality: 0.5
+					}).then(resultBlob => {
+						var errors = validate(resultBlob);
+						if (0 < errors.length) {
 							nowLoading = false;
+							errorCallback(errors);
+							return;
 						}
-						image.src = evt.target.result;
+						resize(resultBlob, function(res) {
+							successCallback({...res, fileName: file.name});
+							nowLoading = false;
+						});
+					});
+				} else {
 
+					var errors = validate(file);
+					if (0 < errors.length) {
+						nowLoading = false;
+						errorCallback(errors);
+						return;
 					}
-					fr.readAsDataURL(file);
-				});
-			}
+					resize(file, function(res) {
+						successCallback(res);
+						nowLoading = false;
+					});
+				}
 
+			});
+
+		}
+
+		// 入力チェック
+		var validate = function(blob) {
+			var errors = [];
+			// 画像ファイルチェック
+			if( !blob.type.match("image.*") ){
+				errors.push('選択されたファイルは画像ファイルではありません。');
+			}
+			// ファイルサイズチェック
+			if( maxFileSize < blob.size ){
+				errors.push('画像ファイルのファイルサイズが最大値('+Math.floor(maxFileSize/1000000)+'MB)を超えています。');
+			}
+			return errors;
+		}
+
+		// そのままの
+		var resize = function(blob, callback) {
+			var image = new Image();
+			var fr=new FileReader();
+			fr.onload=function(evt) {
+				// リサイズする
+				image.onload = function() {
+					var width, height;
+					if(image.width > image.height){
+						// 横長の画像は横のサイズを指定値にあわせる
+						var ratio = image.height/image.width;
+						width = thumbnail_width;
+						height = thumbnail_width * ratio;
+					} else {
+						// 縦長の画像は縦のサイズを指定値にあわせる
+						var ratio = image.width/image.height;
+						width = thumbnail_height * ratio;
+						height = thumbnail_height;
+					}
+					// サムネ描画用canvasのサイズを上で算出した値に変更
+					var canvas = $('<canvas id="canvas" width="0" height="0" ></canvas>')
+						.attr('width', width)
+						.attr('height', height);
+					var ctx = canvas[0].getContext('2d');
+					// canvasに既に描画されている画像をクリア
+					ctx.clearRect(0,0,width,height);
+					// canvasにサムネイルを描画
+					ctx.drawImage(image,0,0,image.width,image.height,0,0,width,height);
+	
+					// canvasからbase64画像データを取得
+					var base64 = canvas.get(0).toDataURL('image/jpeg');
+					// base64からBlobデータを作成
+					var barr, bin, i, len;
+					bin = atob(base64.split('base64,')[1]);
+					len = bin.length;
+					barr = new Uint8Array(len);
+					i = 0;
+					while (i < len) {
+						barr[i] = bin.charCodeAt(i);
+						i++;
+					}
+					var resizeBlob = new Blob([barr], {type: 'image/jpeg'});
+
+					callback({
+						fileName: blob.name,
+						ofileData: evt.target.result,
+						fileData: base64,
+						ofileSize: blob.size,
+						fileSize: resizeBlob.size,
+						fileType: resizeBlob.type
+					})
+					
+				}
+				image.src = evt.target.result;
+			}
+			fr.readAsDataURL(blob);
 		}
 
 		$(this).each(function() {
@@ -151,6 +195,8 @@
 	$.fn.imageUploader.defaults = {
 		dropAreaSelector: '',
 		maxFileSize : 10485760, // 10BM
+		thumbnail_width: 500, // 画像リサイズ後の横の長さの最大値
+		thumbnail_height: 500, // 画像リサイズ後の縦の長さの最大値
 		successCallback : function(res) {console.log(res);},
 		errorCallback : function(res) {console.log(res);}
 	}

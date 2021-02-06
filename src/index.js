@@ -2,14 +2,15 @@ import './assets/css/normalize.css';
 import './assets/css/prettify.css';
 import './assets/index.css';
 
-var $ = require('./assets/js/jquery-3.4.1.min.js');
+var $ = require('jquery');
 window.$ = $;
 window.jQuery = $;
-var _ = require('./assets/js/underscore.js');
+var _ = require('lodash');
 window._ = _;
-window.underscore = _;
 require('./assets/js/prettify.js');
 require('./assets/js/lang-css.js');
 require('./assets/js/jquery-stickyNavigator.js');
 require('./assets/js/jquery-imageUploader.js');
 require('./assets/js/common.js');
+var heic2any = require('heic2any');
+window.heic2any = heic2any;

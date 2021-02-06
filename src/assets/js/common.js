@@ -82,6 +82,10 @@ $(function() {
 					'<td>'+res.fileType+'</td>',
 				'</tr>'
 			].join('')).appendTo('#select-image table');
+			$('.error-message').empty();
+		},
+		errorCallback: function(res) {
+			$('.error-message').text(res[0]);
 		}
 	});
 		

@@ -811,6 +811,9 @@ input[type="submit"] {
   background-size: cover;
 }
 
+.error-message {
+  color: red;
+}
 /* テーブル */
 #select-image {
   margin: 20px 0;
