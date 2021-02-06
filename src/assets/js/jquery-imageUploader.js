@@ -93,6 +93,10 @@
 						resize(resultBlob, function(res) {
 							successCallback({...res, fileName: file.name});
 							nowLoading = false;
+						}, function(errors) {
+							errorCallback(errors);
+							nowLoading = false;
+							return;
 						});
 					});
 				} else {
@@ -106,6 +110,10 @@
 					resize(file, function(res) {
 						successCallback(res);
 						nowLoading = false;
+					}, function(errors) {
+						errorCallback(errors);
+						nowLoading = false;
+						return;
 					});
 				}
 
@@ -116,10 +124,6 @@
 		// 入力チェック
 		var validate = function(blob) {
 			var errors = [];
-			// 画像ファイルチェック
-			if( !blob.type.match("image.*") ){
-				errors.push('選択されたファイルは画像ファイルではありません。');
-			}
 			// ファイルサイズチェック
 			if( maxFileSize < blob.size ){
 				errors.push('画像ファイルのファイルサイズが最大値('+Math.floor(maxFileSize/1000000)+'MB)を超えています。');
@@ -128,7 +132,7 @@
 		}
 
 		// そのままの
-		var resize = function(blob, callback) {
+		var resize = function(blob, callback, errorCallback) {
 			var image = new Image();
 			var fr=new FileReader();
 			fr.onload=function(evt) {
@@ -179,6 +183,9 @@
 						fileType: resizeBlob.type
 					})
 					
+				}
+				image.onerror = function() {
+					errorCallback(['選択されたファイルをロードできません。']);
 				}
 				image.src = evt.target.result;
 			}
