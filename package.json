@@ -34,6 +34,10 @@
   "dependencies": {
     "copy-webpack-plugin": "^5.1.1",
     "file-loader": "^5.0.2",
+    "heic2any": "^0.0.3",
+    "jquery": "^3.5.1",
+    "lodash": "^4.17.20",
+    "prettify": "^0.1.7",
     "write-file-webpack-plugin": "^4.5.1"
   }
 }
