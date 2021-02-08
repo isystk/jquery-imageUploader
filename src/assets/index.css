@@ -882,10 +882,10 @@ input[type="submit"] {
   padding: 10px;
 }
 #select-image td {
-  height: 100px;
+  height: 140px;
   text-align: center;
 }
 #select-image td img {
   max-width: 100%;
-  max-height: 100px;
+  max-height: 120px;
 }
