@@ -123,37 +123,44 @@ $(function() {
 					'height': canvas_height,
 					'margin': '0 auto'
 				})
-			canvasEdit.attr('width', width)
-					.attr('height', height)
-					.css('margin-top', Math.floor((canvas_height-height)/2));
-			ctx.drawImage(image, 0, 0, width, height);
+			
+			drawCanvas();
 		}
+	
+		// 画像を回転させる
 		canvasBackground.click(function() {
 			angle += 90;
 			if (360 <= angle) {
 				angle = 0;
 			}
+			drawCanvas();
+			// 回転させたcanvasを一覧に反映する
+			var base64 = canvasEdit.get(0).toDataURL('image/jpeg');
+			target.find('img').attr('src', base64);
+		});
+
+			// キャンバスに描画する
+		var drawCanvas = function() {
 			if ((angle%180)===0) {
-				canvasEdit.attr('width', width)
-						.attr('height', height)
-						.css('margin-top', Math.floor((canvas_height-height)/2));
+				canvasEdit[0].width = width;
+				canvasEdit[0].height = height;
 			} else {
-				canvasEdit.attr('width', height)
-						.attr('height', width)
-						.css('margin-top', 0);
+				canvasEdit[0].width = height;
+				canvasEdit[0].height = width;
+			}
+			// 横長の画像の場合は上にマージンを追加
+			canvasEdit.css('margin-top', 0);
+			if(canvasEdit[0].width > canvasEdit[0].height){
+				canvasEdit.css('margin-top', Math.floor((canvas_height-canvasEdit[0].height)/2));
 			}
 			ctx.clearRect(0, 0, canvasEdit[0].width, canvasEdit[0].height);
 			ctx.translate(canvasEdit[0].width / 2, canvasEdit[0].height / 2);
 			ctx.rotate(angle * Math.PI / 180);
 			ctx.translate(- width / 2, -height / 2);
 			ctx.drawImage(image, 0, 0, width, height);
-			
-			// 回転させたcanvasを一覧に反映する
-			var base64 = canvasEdit.get(0).toDataURL('image/jpeg');
-			target.find('img').attr('src', base64);
-		});
+		}
 
-		// モーダルを
+		// モーダルを開く
 		$('#js-edit-modal').show().find('.js-close').click(function(e) {
 			e.preventDefault();
 			// モーダルを閉じる
