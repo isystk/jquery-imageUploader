@@ -89,8 +89,9 @@ $(function() {
 		}
 	});
 
+	var target = null;
 	$(document).on('click', '.js-view-canvas', function(e) {
-		var self = $(this);
+		target = $(this);
 		e.preventDefault();
 		//2Dコンテキストのオブジェクトを生成する
 		var canvasEdit = $('#canvas-edit');
@@ -149,7 +150,7 @@ $(function() {
 			
 			// 回転させたcanvasを一覧に反映する
 			var base64 = canvasEdit.get(0).toDataURL('image/jpeg');
-			self.find('img').attr('src', base64);
+			target.find('img').attr('src', base64);
 		});
 
 		// モーダルを
