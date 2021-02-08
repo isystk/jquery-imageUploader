@@ -90,6 +90,7 @@ $(function() {
 	});
 
 	$(document).on('click', '.js-view-canvas', function(e) {
+		var self = $(this);
 		e.preventDefault();
 		//2Dコンテキストのオブジェクトを生成する
 		var canvasEdit = $('#canvas-edit');
@@ -131,9 +132,6 @@ $(function() {
 			if (360 <= angle) {
 				angle = 0;
 			}
-			rotateCanvas();
-		});
-		var rotateCanvas = function() {
 			if ((angle%180)===0) {
 				canvasEdit.attr('width', width)
 						.attr('height', height)
@@ -146,9 +144,13 @@ $(function() {
 			ctx.clearRect(0, 0, canvasEdit[0].width, canvasEdit[0].height);
 			ctx.translate(canvasEdit[0].width / 2, canvasEdit[0].height / 2);
 			ctx.rotate(angle * Math.PI / 180);
-			ctx.translate(- image.width / 2, -image.height / 2);
-			ctx.drawImage(image, 0, 0, image.width, image.height);
-		}
+			ctx.translate(- width / 2, -height / 2);
+			ctx.drawImage(image, 0, 0, width, height);
+			
+			// 回転させたcanvasを一覧に反映する
+			var base64 = canvasEdit.get(0).toDataURL('image/jpeg');
+			self.find('img').attr('src', base64);
+		});
 
 		// モーダルを
 		$('#js-edit-modal').show().find('.js-close').click(function(e) {
