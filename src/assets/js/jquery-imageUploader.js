@@ -159,7 +159,7 @@
 					ctx.clearRect(0,0,width,height);
 					// canvasにサムネイルを描画
 					ctx.drawImage(image,0,0,image.width,image.height,0,0,width,height);
-	
+
 					// canvasからbase64画像データを取得
 					var base64 = canvas.get(0).toDataURL('image/jpeg');
 					// base64からBlobデータを作成
@@ -173,7 +173,6 @@
 						i++;
 					}
 					var resizeBlob = new Blob([barr], {type: 'image/jpeg'});
-
 					callback({
 						fileName: blob.name,
 						ofileData: evt.target.result,
@@ -182,7 +181,6 @@
 						fileSize: resizeBlob.size,
 						fileType: resizeBlob.type
 					})
-					
 				}
 				image.onerror = function() {
 					errorCallback(['選択されたファイルをロードできません。']);
