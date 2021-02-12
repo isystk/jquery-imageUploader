@@ -3,10 +3,10 @@
 	/*
 	 * imageUploader
 	 *
-	 * Copyright (c) 2017 iseyoshitaka
+	 * Copyright (c) 2021 iseyoshitaka
 	 * 
 	 * Description:
-	 * ファイル非同期アップローダー
+	 * 画像ファイルをアップロード用にリサイズする（HEIC形式の場合はJPEGに変換）
 	 */
 	$.fn.imageUploader = function(options) {
 	
@@ -83,7 +83,7 @@
 						blob: file,
 						toType: "image/jpeg",
 						quality: 1
-					}).then(resultBlob => {
+					}).then(resultBlob, function() {
 						var errors = validate(resultBlob);
 						if (0 < errors.length) {
 							errorCallback(errors);
@@ -91,7 +91,8 @@
 							return;
 						}
 						resize(resultBlob, function(res) {
-							successCallback({...res, fileName: file.name});
+							res.fileName = file.name;
+							successCallback(res);
 							nowLoading = false;
 						}, function(errors) {
 							errorCallback(errors);
