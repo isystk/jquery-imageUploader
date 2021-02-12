@@ -83,7 +83,7 @@
 						blob: file,
 						toType: "image/jpeg",
 						quality: 1
-					}).then(resultBlob, function() {
+					}).then(function(resultBlob) {
 						var errors = validate(resultBlob);
 						if (0 < errors.length) {
 							errorCallback(errors);
